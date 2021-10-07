@@ -1,5 +1,5 @@
 """
-Code written by Jeremy Cushman and updated by Jorge Torres.
+Code written by Jeremy Cushman and updated/documented by Jorge Torres.
 
 Todo:
     * Document what each function does.
@@ -15,7 +15,8 @@ from random import uniform, betavariate
 import cmath
 
 
-def nuM_range(m, hiearchy,includeSterile, p12, p13, p14, nSamples= 1000):
+def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
+    
     """
     The function calculates the effective Majorana mass,
     bete decay kinetic mass, and sum mass of all neutrino flavors
@@ -23,26 +24,42 @@ def nuM_range(m, hiearchy,includeSterile, p12, p13, p14, nSamples= 1000):
     The calculation depends on the hiearchy specified (IH, or NH)
     and can possibly include the simple 3+1 sterile neutrino model if desired.
     
-    Mixing parameters provided in the parameter list must follow:
-    p12 = [[angle_bestfit, angle_min, angle_max],
-           [deltaMassSquared_bestfit, deltaMassSqaured_min, deltaMassSqaured_max]
-           ]
-    
-    If the boolean flag 'includeSterile' is False, P14 is ignored.
-    
     In the calculation, CP-violating phase, two majorana phases (3 if sterile)
     are randomly drawn from (0, 2pi). 
     Mixing parameters are drawn randomly from (min, max) using a beta function 
     that strongly favors the end points.
     
-    nSamples specifies how many random sampling points are used.
-    Any number on the order of 100K would take about hours. 
     
     Suffix notation:
     _0: best fit values
     _3sigma: 3sigma related
     _U: upper boundary
     _L: lower boundary
+    
+    Parameters
+    ----------
+    m : array_like
+        1D array of masses to be sampled [units: meV].
+        
+    hierarchy : string_like
+        "NH": uses normal ordering scenario
+        "IH": uses inverted hierarchy scenario
+    
+    includeSterile : boolean
+        Whether to include paramenters P14 for extra neutrino 
+        
+    p12, p13, p14 : array_like
+        Mixing parameters. They must follow the following format:
+            
+        pij = [[angle_bestfit, angle_min, angle_max], [deltaMassSquared_bestfit, deltaMassSqaured_min, deltaMassSqaured_max]]
+    
+    nSamples : int
+          nSamples specifies how many random sampling points are used. nSamples = 100K takes ~1 hour    
+          
+    Returns
+    -------
+    array of arrays
+        Arrays containing majorana effective mass,...
     """
     
     T12_0 = p12[0][0]
@@ -180,8 +197,8 @@ def boloLimits(IH, NH, xMin, xMax, yMin=-1, yMax=-1):
     IH.errorbar(xMin*arrowXscale, 270,yerr = 270, lolims=True,  color='#2B4970')
     IH.text(xMin*pow(arrowXscale,2), 270*1.2, '$^{130}$Te Limit', color='#2B4970',fontsize='small')
     
-    IH.axhspan(200, 400,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
-    Geline = IH.axhline(200, color='#AA7F39', label='$^{76}$Ge limit (GERDA + HdM + IGEX)', linestyle='--')
+    IH.axhspan(79, 180,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
+    Geline = IH.axhline(200, color='#AA7F39', label='$^{76}$Ge limit (GERDA)', linestyle='--')
     IH.errorbar(xMin*6, 200, yerr=200, lolims=True,  color='#AA7F39')
     
     IH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
