@@ -16,52 +16,54 @@ import cmath
 
 
 def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
-    
+
     """
-    The function calculates the effective Majorana mass,
+    This function calculates the effective Majorana mass,
     bete decay kinetic mass, and sum mass of all neutrino flavors
-    given the lightest neutrino mass. 
+    given the lightest neutrino mass.
     The calculation depends on the hiearchy specified (IH, or NH)
     and can possibly include the simple 3+1 sterile neutrino model if desired.
-    
+
     In the calculation, CP-violating phase, two majorana phases (3 if sterile)
-    are randomly drawn from (0, 2pi). 
-    Mixing parameters are drawn randomly from (min, max) using a beta function 
+    are randomly drawn from (0, 2pi).
+    Mixing parameters are drawn randomly from (min, max) using a beta function
     that strongly favors the end points.
-    
-    
+
+
     Suffix notation:
     _0: best fit values
     _3sigma: 3sigma related
     _U: upper boundary
     _L: lower boundary
-    
+
     Parameters
     ----------
     m : array_like
         1D array of masses to be sampled [units: meV].
-        
+
     hierarchy : string_like
         "NH": uses normal ordering scenario
         "IH": uses inverted hierarchy scenario
-    
+
     includeSterile : boolean
-        Whether to include paramenters P14 for extra neutrino 
-        
+        Whether to include paramenters P14 for extra neutrino
+
     p12, p13, p14 : array_like
         Mixing parameters. They must follow the following format:
-            
+
         pij = [[angle_bestfit, angle_min, angle_max], [deltaMassSquared_bestfit, deltaMassSqaured_min, deltaMassSqaured_max]]
-    
+
     nSamples : int
-          nSamples specifies how many random sampling points are used. nSamples = 100K takes ~1 hour    
-          
+          nSamples specifies how many random sampling points are used. nSamples = 100K takes ~1 hour
+
     Returns
     -------
     array of arrays
         Arrays containing majorana effective mass,...
     """
-    
+
+
+    ## Define parameters
     T12_0 = p12[0][0]
     C12_0= cos(T12_0)
     S12_0= sin(T12_0)
@@ -72,7 +74,8 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
     T13_0 = p13[0][0]
     C13_0 = cos(T13_0)
     S13_0 = sin(T13_0)
-    
+
+    ## Squared mass difference
     dM2_12_0 = p12[1][0]
     dM2_13_0 = p13[1][0]
     dM2_14_0 = p14[1][0]
@@ -81,7 +84,7 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
     mbb_L_0= 1E6
     mb_0 =0
     sumM_0 =0
-    
+
     mbb_U_3sigma= 1E-3
     mbb_L_3sigma= 1E6
     mb_U_3sigma =1E-3
@@ -89,12 +92,13 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
     sumM_U_3sigma =1E-3
     sumM_L_3sigma =1E6
 
+    ##Define masses from square mass differences depending on the hierarchy scenario
     if hiearchy == 'NH':
         m1_0 = m
         m2_0 = sqrt(m**2 + dM2_12_0)
         m3_0 = sqrt(m**2 + dM2_13_0)
         m4_0 = sqrt(m**2 + dM2_14_0)
-        
+
     else:
         m1_0 = sqrt(m**2+ dM2_13_0)
         m2_0 = sqrt(m**2 + dM2_13_0 + dM2_12_0)
@@ -102,16 +106,12 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
         m4_0 = sqrt(m**2 + dM2_13_0 + dM2_14_0)
     if not includeSterile:
         m4_0 = 0
-        
+
     for ii in range(nSamples):
         alpha = uniform(0, 2*pi)
         beta  = uniform(0, 2*pi)
         gamma = uniform(0, 2*pi)
-        
-        ### Does this probe the whole phase space correctly? ###
-        ### Beta distribution is used under the assumption that
-        ### extreme mixing parameters bring exteme effective majorana masses
-        
+
         T12 = p12[0][1] + betavariate(0.1,0.1) * (p12[0][2]-p12[0][1])
         T13 = p13[0][1] + betavariate(0.1,0.1) * (p13[0][2]-p13[0][1])
         T14 = p14[0][1] + betavariate(0.1,0.1) * (p14[0][2]-p14[0][1])
@@ -123,7 +123,7 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
         C12 = cos(T12); S12 = sin(T12)
         C13 = cos(T13); S13 = sin(T13)
         C14 = cos(T14); S14 = sin(T14)
-        
+
         if hiearchy == 'NH':
             m1 = m
             m2 = sqrt(m**2 + dM2_12)
@@ -137,16 +137,16 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
             m4 = sqrt(m**2 + dM2_13 + dM2_14)
         if  not includeSterile:
             m4 = 0
-            
+
         m_bb_0 = abs(\
                 m1_0 * C12_0**2 * C13_0**2\
                 + m2_0 * S12_0**2 * C13_0**2 * cmath.exp(complex(0,alpha)) \
                 + m3_0 * S13_0**2 * cmath.exp(complex(0,beta))\
                 + m4_0 * S14_0**2 * cmath.exp(complex(0,gamma))\
-                )         
-        
-        if m_bb_0 > mbb_U_0: mbb_U_0 = m_bb_0 
-        if m_bb_0 < mbb_L_0: mbb_L_0 = m_bb_0 
+                )
+
+        if m_bb_0 > mbb_U_0: mbb_U_0 = m_bb_0
+        if m_bb_0 < mbb_L_0: mbb_L_0 = m_bb_0
 
         m_bb_3sigma = abs(\
                 m1 * C12**2 * C13**2 \
@@ -154,11 +154,11 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
                 + m3 * S13**2 * cmath.exp(complex(0,beta)) \
                 + m4 * S14**2 * cmath.exp(complex(0,gamma)) \
                 )
-                         
-        if m_bb_3sigma > mbb_U_3sigma: mbb_U_3sigma = m_bb_3sigma 
-        if m_bb_3sigma < mbb_L_3sigma: mbb_L_3sigma = m_bb_3sigma 
-        
-        #### kinetic neutrino mass from beta Decay         
+
+        if m_bb_3sigma > mbb_U_3sigma: mbb_U_3sigma = m_bb_3sigma
+        if m_bb_3sigma < mbb_L_3sigma: mbb_L_3sigma = m_bb_3sigma
+
+        #### kinetic neutrino mass from beta Decay
         mb_0 = sqrt(\
                     m1_0**2 * C12_0**2 * C13_0**2 \
                     + m2_0**2 * S12_0**2 * C13_0**2 \
@@ -182,73 +182,102 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
 
         if sumM_3sigma > sumM_U_3sigma: sumM_U_3sigma = sumM_3sigma
         if sumM_3sigma < sumM_L_3sigma: sumM_L_3sigma = sumM_3sigma
-    
+
     return [mbb_L_0, mbb_U_0, mbb_L_3sigma, mbb_U_3sigma], \
            [mb_0, mb_L_3sigma, mb_U_3sigma], \
            [sumM_0, sumM_L_3sigma, sumM_U_3sigma]
 
 
 def boloLimits(IH, NH, xMin, xMax, yMin=-1, yMax=-1):
-    
+
     arrowXscale = 1.2
-    
+
     IH.axhspan(270, 650, lw=0,fc='#2B4970',ec='#2B4970', alpha=0.3)
     Teline = IH.axhline(270, color='#2B4970', label='$^{130}$Te limit (CUORE-0 + Cuoricino)')
     IH.errorbar(xMin*arrowXscale, 270,yerr = 270, lolims=True,  color='#2B4970')
     IH.text(xMin*pow(arrowXscale,2), 270*1.2, '$^{130}$Te Limit', color='#2B4970',fontsize='small')
-    
+
     IH.axhspan(79, 180,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
     Geline = IH.axhline(200, color='#AA7F39', label='$^{76}$Ge limit (GERDA)', linestyle='--')
     IH.errorbar(xMin*6, 200, yerr=200, lolims=True,  color='#AA7F39')
-    
+
     IH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
     Xeline = IH.axhline(120, color='#AA7F39', label='$^{136}$Xe limit (KamLAND-Zen + EXO-200)', linestyle='-')
     IH.errorbar(xMin*6*arrowXscale, 120, yerr=120, lolims=True,  color='#AA7F39')
-    
+
     IH.axhspan(50, 130,lw=0, fc='#2B4970',ec='#2B4970', alpha=0.3)
     IH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
     IH.errorbar(xMin*arrowXscale, 50, yerr=50, lolims=True,  color='#2B4970')
     IH.text(xMin*pow(arrowXscale,2), 50*1.2, 'CUORE Sensitivity', color='#2B4970',fontsize='small')
-    
+
     IH.legend(handles=[Teline, Geline, Xeline], loc=3,prop={'size':9})
-        
+
     # ON the right panel
     NH.axhspan(270, 650, lw=0,fc='#2B4970',ec='#AA9B39', alpha=0.3, label='Te-130 Limit')
     #NH.axhspan(270, 650, lw=0,ec='#AA9B39',fill=None, alpha=0.3, hatch='///')
     NH.axhline(270, color='#2B4970', label='Te-130 Limit')
-    
+
     NH.axhspan(200, 400, lw=0,ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
     NH.axhline(200, color='#AA7F39', label='Ge-76 Limit', linestyle='--')
-    
+
     NH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
     NH.axhline(120, color='#AA7F39', label='Xe-136 Limit', linestyle='-')
-    
+
     NH.axhspan(50, 130, lw=0,fc='#2B4970',ec='#452F74', alpha=0.3, label='CUORE Sensitivity')
     #NH.axhspan(50, 130,lw=0, ec='#452F74',fill=None, alpha=0.3, hatch='\\\\\\')
     NH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
-        
-    IH.set_title('3 Flavors, Inverted Hierarchy')
-    NH.set_title('3 Flavors, Normal Hierarchy')
-    
+
+    # IH.set_title('3 Flavors, Inverted Hierarchy')
+    # NH.set_title('3 Flavors, Normal Hierarchy')
+
     IH.set_xlim(xMin, xMax)
     NH.set_xlim(xMin, xMax)
-    
+
     if yMin>0 and yMax >0:
         IH.set_ylim(yMin, yMax)
     else:
         IH.set_ylim(xMin, xMax)
 
 
-def massContour(ax, xArray, y2DArray, col, xlab, ylab=''):
-    if y2DArray.shape[1]==3:
-        ax.plot(xArray, y2DArray[:,0], color=col)
-        ax.fill_between(xArray,y2DArray[:,1], y2DArray[:,2], color=col, alpha=0.2)
-    elif y2DArray.shape[1]==4:
-        ax.fill_between(xArray,y2DArray[:,0], y2DArray[:,1], color=col, alpha=0.4)
-        ax.fill_between(xArray,y2DArray[:,2], y2DArray[:,3], color=col, alpha=0.2)
+def massContour(ax, xArray, y4DArray, col, xlab, ylab=''):
+    """
+    This function makes the "Lobster plot"
+
+    Parameters
+    ----------
+    ax : axes object
+        matplotlib object where plot will be drawn.
+
+    xArray : array_like
+        This is the x-axis (energy in meV) array.
+
+    y4DArray : array_like
+        This is a 4D array containing the central value spread (min, max, respectively) in the first two internal arrays y4DArray[:,1], y4DArray[:,2], and the 3sigma spread values (min, max, respectively) in y4DArray[:,2], y4DArray[:,3].
+
+    col : string
+        choose a color based on matplotlib color palettes: https://matplotlib.org/stable/gallery/color/named_colors.html
+
+    xlab : string
+        x-axis label
+
+    ylab : string
+        y-axis label
+
+    Returns
+    -------
+    plot object
+        It returns a plot object.
+    """
+
+    if y4DArray.shape[1]==3:
+        ax.plot(xArray, y4DArray[:,0], color=col)
+        ax.fill_between(xArray,y4DArray[:,1], y4DArray[:,2], color=col, alpha=0.2)
+    elif y4DArray.shape[1]==4:
+        ax.fill_between(xArray,y4DArray[:,0], y4DArray[:,1], color=col, alpha=0.4)
+        ax.fill_between(xArray,y4DArray[:,2], y4DArray[:,3], color=col, alpha=0.2)
     else:
         return
-    
+
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel(xlab)
