@@ -188,49 +188,116 @@ def nuM_range(m,hiearchy,includeSterile, p12, p13, p14, nSamples = 1000):
            [sumM_0, sumM_L_3sigma, sumM_U_3sigma]
 
 
-def boloLimits(IH, NH, xMin, xMax, yMin=-1, yMax=-1):
+def AddExperimentalLimits(IH, NH, xMin, xMax, isotopes=None, yMin=-1, yMax=-1):
+    """
+    This function adds specified limits and sensitivities to Lobster plot
+
+    Parameters
+    ----------
+    ax : axes object
+        matplotlib object where plot will be drawn.
+
+    xArray : array_like
+        This is the x-axis (energy in meV) array.
+
+    y4DArray : array_like
+        This is a 4D array containing the central value spread (min, max, respectively) in the first two internal arrays y4DArray[:,1], y4DArray[:,2], and the 3sigma spread values (min, max, respectively) in y4DArray[:,2], y4DArray[:,3].
+
+    col : string
+        choose a color based on matplotlib color palettes: https://matplotlib.org/stable/gallery/color/named_colors.html
+
+    xlab : string
+        x-axis label
+
+    ylab : string
+        y-axis label
+
+    Returns
+    -------
+    plot object
+        It returns a plot object.
+    """
 
     arrowXscale = 1.2
+    axSpan = xMax-xMin
+    arrColor = '#2B4970'
+    if(isotopes==None):
+        isotopes = ["Xe", "Te", "Ge"]
+        
+    ##Te limit from CUORE
+    
+    if("Te" in isotopes):
+        mbb_min_Te = 90
+        mbb_max_Te = 305
+        A_Te = 130
+#         IH.axhspan(mbb_min_Te, mbb_max_Te, xmin = (A_Te)/axSpan, xmax = (A_Te)/axSpan, lw=0,fc=arrColor,ec=arrColor, alpha=0.3)
+        Teline = IH.hlines(mbb_min_Te, A_Te-2, A_Te+2, color=arrColor, label='$^{130}$Te limit (CUORE [Prelim.])')
+        IH.errorbar(A_Te, mbb_min_Te,yerr = mbb_max_Te-mbb_min_Te-20, lolims=True,  color=arrColor)
+        IH.text(A_Te-5, mbb_min_Te, '$^{130}$Te', color=arrColor,fontsize='medium', ha="right", fontweight="book")
 
-    IH.axhspan(270, 650, lw=0,fc='#2B4970',ec='#2B4970', alpha=0.3)
-    Teline = IH.axhline(270, color='#2B4970', label='$^{130}$Te limit (CUORE-0 + Cuoricino)')
-    IH.errorbar(xMin*arrowXscale, 270,yerr = 270, lolims=True,  color='#2B4970')
-    IH.text(xMin*pow(arrowXscale,2), 270*1.2, '$^{130}$Te Limit', color='#2B4970',fontsize='small')
+    ## Ge limit from GERDA (2020): https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.125.252502
+    if("Ge" in isotopes):
+        mbb_min_Ge = 79
+        mbb_max_Ge = 180
+        A_Ge = 76
+#         IH.axhspan(mbb_min_Ge, mbb_max_Ge, xmin = (A_Ge)/axSpan, xmax = (A_Ge)/axSpan, lw=0, ec=arrColor,fill=None, alpha=0.3, hatch='\\\\\\')
+        Geline = IH.hlines(mbb_min_Ge, A_Ge-2, A_Ge+2, color=arrColor, label='$^{76}$Ge limit (GERDA)', linestyle='-')
+        IH.errorbar(A_Ge, mbb_min_Ge, yerr=mbb_max_Ge-mbb_min_Ge-20, lolims=True,  color=arrColor)
+        IH.text(A_Ge+3, mbb_min_Ge, '$^{76}$Ge', color=arrColor,fontsize='medium', ha="left", fontweight="book")
 
-    IH.axhspan(79, 180,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
-    Geline = IH.axhline(200, color='#AA7F39', label='$^{76}$Ge limit (GERDA)', linestyle='--')
-    IH.errorbar(xMin*6, 200, yerr=200, lolims=True,  color='#AA7F39')
+    ##Xe limit from KamLand-Zen (2016): https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.117.082503
+    if("Xe" in isotopes):
+        mbb_min_Xe = 61
+        mbb_max_Xe = 165
+        A_Xe = 136
+        
+#         IH.axhspan(mbb_min_Xe, mbb_max_Xe, xmin = (A_Xe)/axSpan, xmax = (A_Xe+10)/axSpan, lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
+        Xeline = IH.hlines(mbb_min_Xe, A_Xe-2, A_Xe+2, color=arrColor, label='$^{136}$Xe limit (KamLAND-Zen)', linestyle='-')
+        IH.errorbar(A_Xe, mbb_min_Xe, yerr=mbb_max_Xe-mbb_min_Xe-20, lolims=True,  color=arrColor)
+        IH.text(A_Xe+3, mbb_min_Xe, '$^{136}$Xe', color=arrColor,fontsize='medium', ha="left", fontweight="book")
 
-    IH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
-    Xeline = IH.axhline(120, color='#AA7F39', label='$^{136}$Xe limit (KamLAND-Zen + EXO-200)', linestyle='-')
-    IH.errorbar(xMin*6*arrowXscale, 120, yerr=120, lolims=True,  color='#AA7F39')
+    ## Mo limit from CUPID-Mo (2021): https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.126.1
+    if("Mo" in isotopes):
+        mbb_min_Mo = 300
+        mbb_max_Mo = 500
+        A_Mo = 100
+        
+#         IH.axhspan(mbb_min_Mo, mbb_max_Mo,lw=0, xmin = 100, xmax = 150, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
+        Moline = IH.hlines(mbb_min_Mo, A_Mo-2, A_Mo+2, color=arrColor, label='$^{100}$Mo limit (CUPID-Mo)', linestyle='-')
+        IH.errorbar(A_Mo, mbb_min_Mo, yerr=mbb_max_Mo-mbb_min_Mo-20, lolims=True,  color=arrColor)
+        IH.text(A_Mo+3, mbb_min_Mo, '$^{100}$Mo', color=arrColor,fontsize='medium', ha="left", fontweight="book")
 
-    IH.axhspan(50, 130,lw=0, fc='#2B4970',ec='#2B4970', alpha=0.3)
-    IH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
-    IH.errorbar(xMin*arrowXscale, 50, yerr=50, lolims=True,  color='#2B4970')
-    IH.text(xMin*pow(arrowXscale,2), 50*1.2, 'CUORE Sensitivity', color='#2B4970',fontsize='small')
 
-    IH.legend(handles=[Teline, Geline, Xeline], loc=3,prop={'size':9})
+    ##
+    ## Sensitivities ##
+    ##
+    
+#     IH.axhspan(50, 130,lw=0, fc='#2B4970',ec='#2B4970', alpha=0.3)
+#     IH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
+#     IH.errorbar(xMin*arrowXscale, 50, yerr=50, lolims=True,  color='#2B4970')
+#     IH.text(xMin*pow(arrowXscale,2), 50*1.2, 'CUORE Sensitivity', color='#2B4970',fontsize='small')
+
+#     IH.legend(handles=[Teline, Geline, Xeline], loc=3,prop={'size':9})
 
     # ON the right panel
-    NH.axhspan(270, 650, lw=0,fc='#2B4970',ec='#AA9B39', alpha=0.3, label='Te-130 Limit')
-    #NH.axhspan(270, 650, lw=0,ec='#AA9B39',fill=None, alpha=0.3, hatch='///')
-    NH.axhline(270, color='#2B4970', label='Te-130 Limit')
+#     NH.axhspan(270, 650, lw=0,fc='#2B4970',ec='#AA9B39', alpha=0.3, label='Te-130 Limit')
+#     #NH.axhspan(270, 650, lw=0,ec='#AA9B39',fill=None, alpha=0.3, hatch='///')
+#     NH.axhline(270, color='#2B4970', label='Te-130 Limit')
 
-    NH.axhspan(200, 400, lw=0,ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
-    NH.axhline(200, color='#AA7F39', label='Ge-76 Limit', linestyle='--')
+#     NH.axhspan(200, 400, lw=0,ec='#AA7F39',fill=None, alpha=0.3, hatch='\\\\\\')
+#     NH.axhline(200, color='#AA7F39', label='Ge-76 Limit', linestyle='--')
 
-    NH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
-    NH.axhline(120, color='#AA7F39', label='Xe-136 Limit', linestyle='-')
+#     NH.axhspan(120, 250,lw=0, ec='#AA7F39',fill=None, alpha=0.3, hatch='///')
+#     NH.axhline(120, color='#AA7F39', label='Xe-136 Limit', linestyle='-')
 
-    NH.axhspan(50, 130, lw=0,fc='#2B4970',ec='#452F74', alpha=0.3, label='CUORE Sensitivity')
-    #NH.axhspan(50, 130,lw=0, ec='#452F74',fill=None, alpha=0.3, hatch='\\\\\\')
-    NH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
+#     IH.axhspan(50, 130, lw=0,fc='#2B4970',ec='#452F74', alpha=0.3, label='CUORE Sensitivity')
+#     IH.axhspan(50, 130,lw=0, ec='#452F74',fill=None, alpha=0.3, hatch='\\\\\\')
+#     IH.axhline(50, color='#2B4970', label='CUORE Sensitivity')
 
     # IH.set_title('3 Flavors, Inverted Hierarchy')
-    # NH.set_title('3 Flavors, Normal Hierarchy')
+    NH.set_xlabel('Atomic number')
 
-    IH.set_xlim(xMin, xMax)
+#     IH.set_xlim(xMin, xMax)
     NH.set_xlim(xMin, xMax)
 
     if yMin>0 and yMax >0:
@@ -273,7 +340,7 @@ def massContour(ax, xArray, y4DArray, col, xlab, ylab=''):
         ax.plot(xArray, y4DArray[:,0], color=col)
         ax.fill_between(xArray,y4DArray[:,1], y4DArray[:,2], color=col, alpha=0.2)
     elif y4DArray.shape[1]==4:
-        ax.fill_between(xArray,y4DArray[:,0], y4DArray[:,1], color=col, alpha=0.4)
+        ax.fill_between(xArray,y4DArray[:,0], y4DArray[:,1], color=col, alpha=0.6)
         ax.fill_between(xArray,y4DArray[:,2], y4DArray[:,3], color=col, alpha=0.2)
     else:
         return
@@ -282,3 +349,33 @@ def massContour(ax, xArray, y4DArray, col, xlab, ylab=''):
     ax.set_yscale('log')
     ax.set_xlabel(xlab)
     ax.set_ylabel(ylab)
+
+def addSensitivity(ax, sens_mbb_min, sens_mbb_max, xMin, experiment_name = "Experiment", color = "C4", hatch = "///"):
+    """
+    This function adds a sensitivity band with limits [sens_mbb_min, sens_mbb_max] for a given experiment.
+
+    Parameters
+    ----------
+    ax : axes object
+        matplotlib object where plot will be drawn.
+        
+    sens_mbb_min, sens_mbb_max : float_like
+        The sensitivity limits
+
+    experiment_name : string
+        Name of the experiment.
+
+    col : string
+        choose a color based on matplotlib color palettes: https://matplotlib.org/stable/gallery/color/named_colors.html
+
+    Returns
+    -------
+    plot object
+        It returns a plot object.
+    """
+        
+    arrowXscale = 1.2
+    ax.axhspan(sens_mbb_min, sens_mbb_max,lw=0, color = color,fc=color,ec=color, alpha=0.1, hatch = "\\")
+    ax.annotate(s='', xy=(1,sens_mbb_min), xytext=(1,sens_mbb_max), arrowprops=dict(arrowstyle='<-', color=color))
+    ax.text(xMin*(pow(arrowXscale,2)), sens_mbb_min*1.2, experiment_name, color=color,fontsize='large')
+    
